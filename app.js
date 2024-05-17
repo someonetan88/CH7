@@ -15,12 +15,10 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-// Middleware
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.set("view engine", "ejs");
 
-// Setup mailer
 const transporter = nodemailer.createTransport({
   service: "gmail",
   host: "smtp.gmail.com",
@@ -35,7 +33,6 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Routes
 app.post("/register", async (req, res) => {
   const { email, password } = req.body;
   if (findUserByEmail(email)) {
@@ -55,7 +52,6 @@ app.post("/login", async (req, res) => {
     if (passwordMatch) {
       const token = jwt.sign({ email: user.email }, process.env.JWT_SECRET, { expiresIn: "1h" });
       io.emit("notification", { message: `Welcome ${email} this is your token ${token}` });
-      // res.json({ token });
     } else {
       io.emit("notification", { message: `Invalid credentials` });
     }
@@ -115,30 +111,25 @@ app.post("/reset-password", async (req, res) => {
   }
 });
 
-// Optional fallthrough error handler
 app.use(function onError(err, req, res, next) {
   Sentry.captureException(err);
   res.statusCode = 500;
   res.end(res.sentry + "\n");
 });
 
-// Start server
 const port = process.env.PORT || 3000;
 server.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
 
-// Socket.io connection
 io.on("connection", (socket) => {
   console.log("A user connected");
 });
 
-// Route to test Sentry error reporting
 app.get("/debug-sentry", function mainHandler(req, res) {
   throw new Error("My first Sentry error!");
 });
 
-// Route to display login page
 app.get("/", (_, res) => {
   res.render("login");
 });
