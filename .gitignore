@@ -1,0 +1,9 @@
+
+# Sentry Config File
+.sentryclirc
+
+# npm
+node_modules
+package-lock.json
+*.log
+*.gz
